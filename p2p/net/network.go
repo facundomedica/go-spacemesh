@@ -302,7 +302,7 @@ func (n *Net) acceptTCP() {
 // SubscribeOnNewRemoteConnections returns new channel where events of new remote connections are reported
 func (n *Net) SubscribeOnNewRemoteConnections() chan NewConnectionEvent {
 	n.regMutex.Lock()
-	ch := make(chan NewConnectionEvent)
+	ch := make(chan NewConnectionEvent, n.config.SwarmConfig.RandomConnections)
 	n.regNewRemoteConn = append(n.regNewRemoteConn, ch)
 	n.regMutex.Unlock()
 	return ch
@@ -365,5 +365,6 @@ func (n *Net) HandlePreSessionIncomingMessage(c Connection, message []byte) erro
 
 	c.SetSession(session)
 	n.publishNewRemoteConnectionEvent(c, anode)
+
 	return nil
 }
