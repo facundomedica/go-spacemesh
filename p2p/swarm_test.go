@@ -275,9 +275,6 @@ func TestSwarm_RoundTrip(t *testing.T) {
 	p1 := p2pTestInstance(t, config.DefaultConfig())
 	p2 := p2pTestInstance(t, config.DefaultConfig())
 
-	defer p1.Shutdown()
-	defer p2.Shutdown()
-
 	exchan1 := p1.RegisterProtocol(exampleProtocol)
 	assert.Equal(t, exchan1, p1.protocolHandlers[exampleProtocol])
 	exchan2 := p2.RegisterProtocol(exampleProtocol)
@@ -287,14 +284,14 @@ func TestSwarm_RoundTrip(t *testing.T) {
 
 	sendDirectMessage(t, p2, p1.lNode.PublicKey().String(), exchan1, true)
 	sendDirectMessage(t, p1, p2.lNode.PublicKey().String(), exchan2, true)
+
+	p1.Shutdown()
+	p2.Shutdown()
 }
 
 func TestSwarm_MultipleMessages(t *testing.T) {
 	p1 := p2pTestInstance(t, config.DefaultConfig())
 	p2 := p2pTestInstance(t, config.DefaultConfig())
-
-	defer p1.Shutdown()
-	defer p2.Shutdown()
 
 	exchan1 := p1.RegisterProtocol(exampleProtocol)
 	assert.Equal(t, exchan1, p1.protocolHandlers[exampleProtocol])
@@ -311,6 +308,9 @@ func TestSwarm_MultipleMessages(t *testing.T) {
 		go func() { sendDirectMessage(t, p2, p1.lNode.String(), exchan1, false); wg.Done() }()
 	}
 	wg.Wait()
+
+	p1.Shutdown()
+	p2.Shutdown()
 }
 
 type swarmArray struct {
@@ -341,7 +341,6 @@ func TestSwarm_MultipleMessagesFromMultipleSenders(t *testing.T) {
 	cfg.SwarmConfig.Bootstrap = false
 
 	p1 := p2pTestInstance(t, cfg)
-	defer p1.Shutdown()
 
 	exchan1 := p1.RegisterProtocol(exampleProtocol)
 	assert.Equal(t, exchan1, p1.protocolHandlers[exampleProtocol])
@@ -384,7 +383,9 @@ func TestSwarm_MultipleMessagesFromMultipleSenders(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+	p1.Shutdown()
 	sa.clean()
+
 }
 
 func TestSwarm_MultipleMessagesFromMultipleSendersToMultipleProtocols(t *testing.T) {
@@ -401,7 +402,6 @@ func TestSwarm_MultipleMessagesFromMultipleSendersToMultipleProtocols(t *testing
 	var wg sync.WaitGroup
 
 	p1 := p2pTestInstance(t, cfg)
-	defer p1.Shutdown()
 
 	var protos []string
 
@@ -451,6 +451,7 @@ func TestSwarm_MultipleMessagesFromMultipleSendersToMultipleProtocols(t *testing
 		}()
 	}
 	wg.Wait()
+	p1.Shutdown()
 	sa.clean()
 }
 
